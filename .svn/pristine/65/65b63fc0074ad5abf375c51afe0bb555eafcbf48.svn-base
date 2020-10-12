@@ -1,0 +1,205 @@
+<style>
+    .logistics {
+        display: none;
+    }
+
+    .row-flex {
+        display: flex;
+    }
+
+    .main-type {
+        position: relative;
+    }
+
+    .select-del {
+        position: absolute;
+        top: 0;
+        right: 0;
+        color: #f00;
+
+    }
+
+    .goods-type-select {
+        border: 1px solid #18bc9c
+    }
+
+    .goods-type {
+        width: 191px;
+        height: 70px;
+        line-height: 35px;
+        background: url(/assets/addons/shopro/img/goods.png) no-repeat;
+        display: block;
+        padding: 0px 20px;
+        margin-right: 10px;
+    }
+
+    .goods-typeright {
+        background: url(/assets/addons/shopro/img/xinu.png) no-repeat;
+        color: #000;
+    }
+
+    /*sku选择样式*/
+
+
+    .skuli {
+        float: left;
+        line-height: 30px;
+        list-style: none;
+        margin-right: 10px;
+    }
+
+    .clear {
+        clear: both;
+    }
+
+    .delCusSkuVal,
+    .delCusSkuType {
+        font-size: 14px;
+        text-decoration: none;
+        color: #666;
+    }
+
+    /*表格样式*/
+    table.skuTable {
+        font-size: 14px;
+        color: #333333;
+        border-width: 1px;
+        border-color: #ddd;
+        margin: 30px;
+        border-collapse: collapse;
+    }
+
+    table.skuTable th {
+        border-width: 1px;
+        padding: 10px 10px;
+        border-style: solid;
+        border-color: #ddd;
+        color: #666;
+        background-color: #ededed;
+    }
+
+    table.skuTable td {
+        border-width: 1px;
+        padding: 5px 10px;
+        border-style: solid;
+        border-color: #ddd;
+        background-color: #ffffff;
+        color: #777;
+        widows: auto;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    table.skuTable td input {
+        width: 100%;
+        /* border:none; */
+        font-size: 14px;
+        padding: 0;
+        margin: 0;
+        color: #666;
+        text-align: center;
+    }
+
+    .cloneSku {
+        margin: 10px 0 0 40px;
+    }
+
+    .main-type {
+        margin: 10px;
+    }
+
+    .main-select {
+        color: #f00;
+    }
+
+    .status {
+        border: none;
+        cursor: pointer;
+        /* color: #3498db; */
+        color: #18bc9c;
+        font-size: 14px;
+    }
+
+    .statusDelete {
+        color: #ED3C30;
+        margin-left: 10px;
+    }
+
+    .status-s {
+        color: #3498db;
+    }
+
+    .goodsListTable tr {
+        display: flex;
+        border-bottom: 1px solid #eee;
+    }
+
+    .goodsListTable tr img {
+        width: 46px;
+        height: 46px;
+    }
+
+    .table>thead>tr>th {
+        border: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    .goodsListTable td {
+        border: none;
+        padding: 15px 0 !important;
+        border: none !important;
+
+    }
+
+    [v-cloak] {
+        display: none
+    }
+</style>
+<form id="add-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    <input type="hidden" name="row[goodsList]" id="selectScore">
+        <div class="panel-body">
+            <div id="myTabContent" class="tab-content">
+                <div class="tab-pane fade active in" id="basic">
+                    <div class="widget-body no-padding">
+                        <div class="form-group">
+                            <legend>商品信息</legend>
+                        </div>
+                        <div id="skuPrce" v-show="goodsList.length>0" v-cloak>
+                            <table class="table goodsListTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 45px;padding-left: 10px;">商品</th>
+                                        <th style="width: 65%;padding:15px 10px !important;"></th>
+                                        <th>设置</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, i) in goodsList" :key="i">
+                                        <td>
+                                            <img :src="item.image">
+                                        </td>
+                                        <td style="width: 65%;padding:15px 10px !important;">
+                                            <span>{{item.title}}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status chooseIntegralPrice" :class="item.opt?'status-s':''"
+                                                :data-id="item.id" :data-actSkuPrice="encodeURI(item.actSkuPrice)"
+                                                :data-index="i">{{item.opt === 0 ? "设置价格" : "修改价格"}}</span>
+                                            <!-- <span class="status statusDelete" @click="selectDelete(i)">移除</span> -->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group layer-footer">
+            <label class="control-label col-xs-12 col-sm-2"></label>
+            <div class="col-xs-12 col-sm-8">
+                <button type="button" class="btn btn-success btn-embossed" id="scoreBtn">{:__('OK')}</button>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,189 @@
+<link rel="stylesheet" href="__CDN__/assets/addons/shopro/libs/element/element.css">
+<style>
+    #fans-index {
+        font-family: Source Han Sans SC;
+        color: #666;
+        background: #fff;
+        border-radius: 6px;
+        padding: 0 20px 20px;
+        /* height: calc(100vh - 74px); */
+        font-size: 14px;
+    }
+
+    .fans-body {
+        /* height: calc(100vh - 280px); */
+    }
+
+    .common-btn {
+        background: #7536D0;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    /* title */
+    .title-tip {
+        font-weight: 600;
+        padding: 18px 0;
+    }
+
+    .title-opt {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 20px;
+    }
+
+    .title-opt .el-input__inner,
+    .title-opt .el-input {
+        height: 30px;
+        line-height: 30px;
+        width: 236px;
+    }
+
+    .title-opt .el-input__icon {
+        line-height: 30px;
+    }
+
+    .sync-btn {
+        width: 100px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 12px;
+    }
+
+    .view-btn {
+        color: #7536D0;
+        cursor: pointer;
+    }
+
+    .avatar-img {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid #E6E6E6;
+    }
+
+    .sex-img {
+        width: 15px;
+        height: 15px;
+        margin: 0 20px;
+    }
+
+    /* footer */
+    .fans-footer {
+        padding-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .el-pager li.active,
+    .el-pager li:hover,
+    .el-select-dropdown__item.selected {
+        color: #7536D0;
+    }
+
+    .el-input__inner:hover,
+    .el-input__inner:focus,
+    .el-select .el-input.is-focus .el-input__inner,
+    .el-select .el-input.is-hover .el-input__inner,
+    .el-pagination__sizes .el-input .el-input__inner:hover {
+        border-color: #7536D0;
+    }
+
+    /* table */
+    .el-table td,
+    .el-table th {
+        border-right: none;
+    }
+
+    .el-table th {
+        background: #F9F9F9;
+        height: 40px;
+        padding: 8px 0;
+    }
+
+    .el-table td {
+        padding: 7px 0 8px;
+    }
+
+    .el-table .cell {
+        padding-left: 20px !important;
+        font-size: 13px;
+        color: #444;
+        font-weight: 500;
+    }
+
+
+    [v-cloak] {
+        display: none
+    }
+</style>
+<script src="__CDN__/assets/addons/shopro/libs/vue.js"></script>
+<script src="__CDN__/assets/addons/shopro/libs/element/element.js"></script>
+<script src="__CDN__/assets/addons/shopro/libs/moment.js"></script>
+<div id="fans-index" v-cloak>
+    <div class="title">
+        <div class="title-tip">
+            粉丝列表
+        </div>
+        <div class="title-opt">
+            <div class="common-btn sync-btn" @click="getSync">同步所有粉丝</div>
+            <el-input placeholder="请输入内容" suffix-icon="el-icon-search" v-model="searchKey">
+            </el-input>
+        </div>
+    </div>
+    <div class="fans-body">
+        <el-table :data="fansList" border style="width: 100%">
+            <el-table-column prop="id" label="ID" width="80">
+            </el-table-column>
+            <el-table-column prop="" label="关注粉丝" width="330">
+                <template slot-scope="scope">
+                    <div>
+                        <img class="avatar-img"
+                            :src="scope.row.headimgurl?scope.row.headimgurl:'/assets/addons/shopro/img/wechat/avatar.jpg'">
+                        <span class="sex-img" v-if="scope.row.sex==0">未知</span>
+                        <img class="sex-img" v-if="scope.row.sex==1" src="/assets/addons/shopro/img/wechat/male.png">
+                        <img class="sex-img" v-if="scope.row.sex==2" src="/assets/addons/shopro/img/wechat/female.png">
+                        <span>{{scope.row.nickname}}</span>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="" label="粉丝地区" width="260">
+                <template slot-scope="scope">
+                    <div>
+                        {{scope.row.country}} {{scope.row.province}} {{scope.row.city}}
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="subscribe" label="关注状态" width="200">
+                <template slot-scope="scope">
+                    <span
+                        :style="{color:scope.row.subscribe==1?'#0d9f55':''}">{{scope.row.subscribe==0?'取消关注':'正在关注'}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="subscribe_time" label="关注时间" width="260">
+                <template slot-scope="scope">
+                    <span>{{moment(scope.row.subscribe_time*1000).format("YYYY-MM-DD HH:mm:ss")}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="subscribe_time" label="更新时间" width="260">
+                <template slot-scope="scope">
+                    <span>{{moment(scope.row.updatetime*1000).format("YYYY-MM-DD HH:mm:ss")}}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column prop="" label="操作" min-width="100px">
+                <template slot-scope="scope">
+                    <span class="view-btn" @click="viewBtn(scope.row.openid)">查看</span>
+                </template>
+            </el-table-column>
+        </el-table>
+    </div>
+    <div class="fans-footer">
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+            :page-sizes="[10, 20, 30, 40]" :page-size="10" layout="total, sizes, prev, pager, next, jumper"
+            :total="totalPage">
+        </el-pagination>
+    </div>
+</div>

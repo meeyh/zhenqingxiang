@@ -1,0 +1,614 @@
+<?php
+
+namespace app\admin\controller\shopro\order;
+
+use addons\shopro\library\Export;
+use addons\shopro\model\Config as ModelConfig;
+use think\Db;
+use think\Config;
+use app\common\controller\Backend;
+
+/**
+ * 订单管理
+ *
+ * @icon fa fa-circle-o
+ */
+class Order extends Backend
+{
+
+    /**
+     * Order模型对象
+     * @var \app\admin\model\shopro\order\Order
+     */
+    protected $model = null;
+
+    public function _initialize()
+    {
+        parent::_initialize();
+
+        // 手动加载语言包
+        $this->loadlang('shopro/order/order_item');
+        $this->loadlang('shopro/dispatch/dispatch');
+
+        $this->model = new \app\admin\model\shopro\order\Order;
+        $this->view->assign("typeList", $this->model->getTypeList());
+        $this->view->assign("statusList", $this->model->getStatusList());
+        $this->view->assign("payTypeList", $this->model->getPayTypeList());
+        $this->view->assign("platformList", $this->model->getPlatformList());
+    }
+
+    /**
+     * 默认生成的控制器所继承的父类中有index/add/edit/del/multi五个基础方法、destroy/restore/recyclebin三个回收站方法
+     * 因此在当前控制器中可不用编写增删改查的代码,除非需要自己控制这部分逻辑
+     * 需要将application/admin/library/traits/Backend.php中对应的方法复制到当前控制器,然后进行修改
+     */
+
+
+    /**
+     * 查看
+     */
+    public function index()
+    {
+        //当前是否为关联查询
+        $this->relationSearch = true;
+        //设置过滤方法
+        $this->request->filter(['strip_tags', 'trim']);
+        if ($this->request->isAjax()) {
+            //如果发送的来源是Selectpage，则转发到Selectpage
+            if ($this->request->request('keyField')) {
+                return $this->selectpage();
+            }
+            // list($where, $sort, $order, $offset, $limit) = $this->buildparams();
+
+            $sort = $this->request->get("sort", !empty($this->model) && $this->model->getPk() ? $this->model->getPk() : 'id');
+            $order = $this->request->get("order", "DESC");
+            $offset = $this->request->get("offset", 0);
+            $limit = $this->request->get("limit", 0);
+
+            $total = $this->buildSearchOrder()
+                ->order($sort, $order)
+                ->count();
+
+            $list = $this->buildSearchOrder()
+                ->with(['user', 'item'])
+                ->order($sort, $order)
+                ->limit($offset, $limit)
+                ->select();
+
+            // foreach ($list as $row) {
+            //     $row->visible(['id','type','order_sn','user','item','user_id','phone','consignee','province_name','city_name','area_name','address','status','memo','remark','total_amount','total_fee','createtime']);
+            // }
+
+            $list = collection($list)->toArray();
+            $result = array("total" => $total, "rows" => $list);
+
+            return $this->success('操作成功', null, $result);
+        }
+        return $this->view->fetch();
+    }
+
+
+    public function export()
+    {
+        $export = new Export();
+
+        $sort = $this->request->get("sort", !empty($this->model) && $this->model->getPk() ? $this->model->getPk() : 'id');
+        $order = $this->request->get("order", "DESC");
+        $list = $this->buildSearchOrder()
+            ->with(['user', 'item'])
+            ->order($sort, $order)
+            ->select();
+
+        $expCellName = [
+            'order_id' => 'Id',
+            'order_sn' => '订单号',
+            'type_text' => '订单类型',
+            'status_text' => '订单状态',
+            'pay_type_text' => '支付类型',
+            'paytime_text' => '支付时间',
+            'platform_text' => '交易平台',
+            'user_info' => '用户信息',
+            'total_amount' => '订单总金额',
+            'discount_fee' => '优惠金额',
+            'pay_fee' => '实际支付金额',
+            'score_fee' => '积分支付数量',
+            'activity_type_text' => '营销类型',
+            'goods_title' => '商品名称',
+            'goods_original_price' => '商品原价',
+            'goods_price' => '商品价格',
+            'goods_sku_text' => '商品规格',
+            'goods_num' => '购买数量',
+            'dispatch_status_text' => '发货状态',
+            'dispatch_fee' => '发货费用',
+            'dispatch_type_text' => '发货方式',
+            'aftersale_refund' => '售后/退款',
+            'comment_status_text' => '评价状态',
+            'refund_fee' => '退款金额',
+            'refund_msg' => '退款原因',
+            'express_name' => '快递公司',
+            'express_no' => '快递单号',
+        ];
+
+        $newList = [];
+        foreach ($list as $key => $order) {
+            $data = [
+                'order_id' => $order['id'],
+                'order_sn' => $order['order_sn'],
+                'type_text' => $order['type_text'],
+                'status_text' => $order['status_text'],
+                'pay_type_text' => $order['pay_type_text'],
+                'paytime_text' => $order['paytime_text'],
+                'platform_text' => $order['platform_text'],
+                'user_info' => $order['user'] ? ($order['user']['nickname'] . '-' . $order['user']['mobile']) : '',
+                'total_amount' => $order['total_amount'],
+                'discount_fee' => $order['discount_fee'],
+                'pay_fee' => $order['pay_fee'],
+                'score_fee' => $order['score_fee'],
+            ];
+            foreach ($order['item'] as $k => $item) {
+                $itemData = [
+                    'activity_type_text' => $item['activity_type_text'],
+                    'goods_title' => $item['goods_title'],
+                    'goods_original_price' => $item['goods_original_price'],
+                    'goods_price' => $item['goods_price'],
+                    'goods_sku_text' => $item['goods_sku_text'],
+                    'goods_num' => $item['goods_num'],
+                    'dispatch_status_text' => $item['dispatch_status_text'],
+                    'dispatch_fee' => $item['dispatch_fee'],
+                    'dispatch_type_text' => $item['dispatch_type_text'],
+                    'aftersale_refund' => $item['aftersale_status_text'] . '/' . $item['refund_status_text'],
+                    'comment_status_text' => $item['comment_status_text'],
+                    'refund_fee' => $item['refund_fee'],
+                    'refund_msg' => $item['refund_msg'],
+                    'express_name' => $item['express_name'],
+                    'express_no' => $item['express_no'],
+                ];
+
+                $newList[] = array_merge($data, $itemData);
+            }
+        }
+
+        // 增加合计
+        $newList[] = [
+            'order_id' => "订单总数：" . count($list) . "；订单总金额：￥" . array_sum(array_column($list, 'total_amount')) . "；优惠总金额：￥" . array_sum(array_column($list, 'discount_fee')) . "；实际支付总金额：￥" . array_sum(array_column($list, 'pay_fee')) . "；支付总积分：" . array_sum(array_column($list, 'score_fee'))
+        ];
+
+        $export->exportExcel('订单列表-' . date('Y-m-d H:i:s'), $expCellName, $newList);
+    }
+
+
+    // 获取要查询的订单类型
+    public function getType()
+    {
+        $type = $this->model->getTypeList();
+        $pay_type = $this->model->getPayTypeList();
+        $platform = $this->model->getPlatformList();
+        $dispatch_type = (new \app\admin\model\shopro\dispatch\Dispatch)->getTypeList();
+        $activity_type = (new \app\admin\model\shopro\activity\Activity)->getTypeList();
+
+        $result = [
+            'type' => $type,
+            'pay_type' => $pay_type,
+            'platform' => $platform,
+            'dispatch_type' => $dispatch_type,
+            'activity_type' => $activity_type,
+        ];
+
+        $data = [];
+        foreach ($result as $key => $list) {
+            $data[$key][] = ['name' => '全部', 'type' => 'all'];
+
+            foreach ($list as $k => $v) {
+                $data[$key][] = [
+                    'name' => $v,
+                    'type' => $k
+                ];
+            }
+        }
+
+        return $this->success('操作成功', null, $data);
+    }
+
+
+    public function detail($id)
+    {
+        $row = $this->model->get($id);
+        $row->user = \app\admin\model\User::get($row->user_id);
+        $list = \app\admin\model\shopro\order\OrderItem::where(['order_id' => $id])->select();
+
+        $this->assignconfig('order', $row);
+        $this->assignconfig('item', $list);
+        return $this->view->fetch();
+    }
+
+    public function send($id, $item_id = '')
+    {
+        if ($this->request->isAjax()) {
+            $express_name = $this->request->post('express_name');
+            $express_no = $this->request->post('express_no');
+
+            $order = $this->model->where('status', \app\admin\model\shopro\order\Order::STATUS_PAYED)
+                ->where('id', $id)->find();
+
+            if (!$order) {
+                $this->error('订单不存在或未支付');
+            }
+
+            $where = ['order_id' => $id];
+            $where['dispatch_status'] = ['in', [
+                \app\admin\model\shopro\order\OrderItem::DISPATCH_STATUS_NOSEND,
+                \app\admin\model\shopro\order\OrderItem::DISPATCH_STATUS_SENDED
+            ]];
+            if ($item_id) {
+                $where['id'] = ['in', explode(',', $item_id)];
+            }
+
+            $item_list = \app\admin\model\shopro\order\OrderItem::where($where)->select();
+
+            if (!$item_list) {
+                $this->error('没有要发货的订单商品');
+            }
+
+            Db::transaction(function () use ($order, $item_list, $express_name, $express_no) {
+                foreach ($item_list as $key => $item) {
+                    // 订单发货前
+                    $data = ['order' => $order, 'item' => $item];
+                    \think\Hook::listen('order_send_before', $data);
+
+                    $item->express_name = $express_name;
+                    $item->express_no = $express_no;
+                    $item->dispatch_status = \app\admin\model\shopro\order\OrderItem::DISPATCH_STATUS_SENDED;    // 已发货状态
+                    $item->save();
+
+                    \addons\shopro\model\OrderAction::operAdd($order, $item, $this->auth->getUserInfo(), 'admin', '管理员发货订单');
+
+                    // 订单发货后
+                    $data = ['order' => $order, 'item' => $item];
+                    \think\Hook::listen('order_send_after', $data);
+                }
+            });
+
+            // 重新获取订单
+            $order = $this->model->with(['item'])->where('id', $id)->find();
+
+            return $this->success('操作成功', null, $order);
+        }
+    }
+
+
+    public function aftersaleFinish($id, $item_id)
+    {
+        if ($this->request->isAjax()) {
+
+            $where = [
+                'order_id' => $id,
+                'id' => $item_id,
+                'aftersale_status' => \app\admin\model\shopro\order\OrderItem::AFTERSALE_STATUS_AFTERING
+            ];
+
+            $order = $this->model->where('status', 'in', [
+                    \app\admin\model\shopro\order\Order::STATUS_PAYED,
+                    \app\admin\model\shopro\order\Order::STATUS_FINISH
+                ]
+            )
+                ->where('id', $id)->find();
+            $item = \app\admin\model\shopro\order\OrderItem::where($where)->find();
+
+            if (!$order || !$item) {
+                $this->error('订单不存在或不是售后订单');
+            }
+
+            Db::transaction(function () use ($order, $item) {
+                $item->aftersale_status = \app\admin\model\shopro\order\OrderItem::AFTERSALE_STATUS_OK;    // 售后完成
+                $item->save();
+
+                \addons\shopro\model\OrderAction::operAdd($order, $item, $this->auth->getUserInfo(), 'admin', '管理员售后完成订单');
+            });
+
+            $item_list = \app\admin\model\shopro\order\OrderItem::where(['order_id' => $id])->select();
+            return $this->success('操作成功', null, $item_list);
+        }
+    }
+
+
+    /**
+     * 拒绝退款
+     */
+    public function refundRefuse($id = 0, $item_id = 0)
+    {
+        if ($this->request->isAjax()) {
+            $refund_msg = $this->request->post('refund_msg');
+
+            $where = [
+                'order_id' => $id,
+                'id' => $item_id,
+                'refund_status' => \app\admin\model\shopro\order\OrderItem::REFUND_STATUS_ING
+            ];
+
+            $order = $this->model->where('status', 'in', [
+                    \app\admin\model\shopro\order\Order::STATUS_PAYED,
+                    \app\admin\model\shopro\order\Order::STATUS_FINISH
+                ]
+            )->where('id', $id)->find();
+
+            $item = \app\admin\model\shopro\order\OrderItem::where($where)->find();
+
+            if (!$order || !$item) {
+                $this->error('订单不存在或不是退款订单');
+            }
+
+            Db::transaction(function () use ($order, $item, $refund_msg) {
+                // 订单退款拒绝前
+                $data = ['order' => $order, 'item' => $item];
+                \think\Hook::listen('order_refund_refuse_before', $data);
+
+                $item->refund_status = \app\admin\model\shopro\order\OrderItem::REFUND_STATUS_REFUSE;    // 拒绝退款
+                $item->refund_msg = $refund_msg;
+                $item->save();
+
+                \addons\shopro\model\OrderAction::operAdd($order, $item, $this->auth->getUserInfo(), 'admin', '管理员拒绝订单退款');
+
+                // 订单退款拒绝后
+                $data = ['order' => $order, 'item' => $item];
+                \think\Hook::listen('order_refund_refuse_after', $data);
+            });
+
+            $item_list = \app\admin\model\shopro\order\OrderItem::where(['order_id' => $id])->select();
+            return $this->success('操作成功', null, $item_list);
+        }
+    }
+
+
+    /**
+     * 同意退款
+     */
+    public function refund($id = 0, $item_id = 0)
+    {
+        if ($this->request->isAjax()) {
+            $refund_money = $this->request->post('refund_money');
+
+            $where = [
+                'order_id' => $id,
+                'id' => $item_id,
+                'refund_status' => \app\admin\model\shopro\order\OrderItem::REFUND_STATUS_ING
+            ];
+
+            $order = $this->model->where('status', 'in', [
+                    \app\admin\model\shopro\order\Order::STATUS_PAYED,
+                    \app\admin\model\shopro\order\Order::STATUS_FINISH
+                ]
+            )
+                ->where('id', $id)->find();
+            $item = \app\admin\model\shopro\order\OrderItem::where($where)->find();
+
+            if (!$order || !$item) {
+                $this->error('订单不存在或不是退款订单');
+            }
+
+            // 如果退款金额大于订单支付总金额
+            if ($refund_money > $order->total_fee) {
+                $this->error('退款金额不能大于实际支付金额');
+            }
+
+            Db::transaction(function () use ($order, $item, $refund_money) {
+                // 开始退款
+                \app\admin\model\shopro\order\Order::startRefund($order, $item, $refund_money, $this->auth->getUserInfo(), '管理员操作退款');
+            });
+
+            $item_list = \app\admin\model\shopro\order\OrderItem::where(['order_id' => $id])->select();
+            return $this->success('操作成功', null, $item_list);
+        }
+    }
+
+
+    // 取消订单
+    public function cancel($id)
+    {
+        if ($this->request->isAjax()) {
+            $order = $this->model->where('id', $id)->nopay()->find();
+            if (!$order) {
+                $this->error('订单不存在或已取消');
+            }
+
+            $order = $order->doCancel($order, $this->auth->getUserInfo(), 'admin');
+
+            return $this->success('操作成功', null, $order);
+        }
+    }
+
+
+    // 修改收货人信息
+    public function editConsignee($id)
+    {
+        if ($this->request->isAjax()) {
+            $params = $this->request->post();
+            extract($params);
+
+            $row = $this->model->get($id);
+            if (!$row) {
+                $this->error('订单不存在');
+            }
+
+            try {
+                if ($this->modelValidate) {
+                    $name = str_replace("\\model\\", "\\validate\\", get_class($this->model));
+                    $validate = is_bool($this->modelValidate) ? ($this->modelSceneValidate ? $name . '.edit' : $name) : $this->modelValidate;
+                    $row->validateFailException(true)->validate($validate);
+                }
+
+                $result = $row->save([
+                    'consignee' => $consignee,
+                    'phone' => $phone,
+                    'province_id' => $province_id,
+                    'province_name' => $province_name,
+                    'city_id' => $city_id,
+                    'city_name' => $city_name,
+                    'area_id' => $area_id,
+                    'area_name' => $area_name,
+                    'address' => $address,
+                ], ['id' => $id]);
+            } catch (ValidateException $e) {
+                $this->error($e->getMessage());
+            } catch (PDOException $e) {
+                $this->error($e->getMessage());
+            } catch (Exception $e) {
+                $this->error($e->getMessage());
+            }
+            if ($result !== false) {
+                $order = $this->model->get($id);
+                $this->success('修改成功', null, $order);
+            } else {
+                $this->error(__('No rows were updated'));
+            }
+        }
+    }
+
+    // 编辑商家备注
+    public function editMemo($id)
+    {
+        if ($this->request->isAjax()) {
+            $memo = $this->request->post('memo');
+
+            $order = $this->model->get($id);
+            if (!$order) {
+                $this->error('订单不存在');
+            }
+
+            $order->memo = $memo;
+            $order->save();
+
+            \addons\shopro\model\OrderAction::operAdd($order, null, $this->auth->getUserInfo(), 'admin', "修改备注：" . $memo);
+
+            return $this->success('操作成功', null, $order);
+        }
+    }
+
+
+    // 获取订单操作记录
+    public function actions($id)
+    {
+        $actions = \app\admin\model\shopro\order\OrderAction::with('oper')->where('order_id', $id)->select();
+
+        foreach ($actions as $key => $action) {
+            $action = $action->toArray();
+            if ($action['oper_type'] == 'admin') {
+                $oper = [
+                    'id' => $action['oper_id'],
+                    'name' => $action['oper'] ? $action['oper']['nickname'] : ''
+                ];
+            } else if ($action['oper_type'] == 'user') {
+                $oper = [
+                    'id' => $action['oper_id'],
+                    'name' => '用户'
+                ];
+            } else if ($action['oper_type'] == 'system') {
+                $oper = [
+                    'id' => $action['oper_id'],
+                    'name' => '系统'
+                ];
+            } else {
+                $oper = null;
+            }
+
+            $action['oper'] = $oper;
+            $actions[$key] = $action;
+        }
+
+        return $this->success('操作成功', null, $actions);
+    }
+
+
+    // 构建查询条件
+    private function buildSearchOrder()
+    {
+        $search = $this->request->get("search", '');        // 关键字
+        $type = $this->request->get("type", 'all');
+        $pay_type = $this->request->get("pay_type", 'all');
+        $platform = $this->request->get("platform", 'all');
+        $activity_type = $this->request->get("activity_type", 'all');
+        $dispatch_type = $this->request->get("dispatch_type", 'all');
+        $status = $this->request->get("status", 'all');
+        $datetimerange = array_filter(explode(' - ', $this->request->get('datetimerange', '')));
+
+        $name = $this->model->getTable();
+        $tableName = $name . '.';
+
+        $orders = $this->model;
+
+        if ($search) {
+            // 模糊搜索字段
+            $searcharr = ['order_sn', 'consignee', 'phone', 'province_name', 'city_name', 'area_name', 'address'];
+            foreach ($searcharr as $k => &$v) {
+                $v = stripos($v, ".") === false ? $tableName . $v : $v;
+            }
+            unset($v);
+            $orders = $orders->where(function ($query) use ($searcharr, $search, $tableName) {
+                $query->where(implode("|", $searcharr), "LIKE", "%{$search}%")
+                    ->whereOr(function ($query) use ($search, $tableName) {
+                        $query->whereExists(function ($query) use ($search, $tableName) {
+                            $itemTableName = (new \app\admin\model\shopro\order\OrderItem())->getQuery()->getTable();
+
+                            $query->table($itemTableName)->where($itemTableName . '.order_id=' . $tableName . 'id')
+                                ->where('goods_title', 'like', "%{$search}%");
+                        });
+                    })
+                    ->whereOr(function ($query) use ($search, $tableName) {                  // 用户
+                        $query->whereExists(function ($query) use ($search, $tableName) {
+                            $userTableName = (new \app\admin\model\User())->getQuery()->getTable();
+
+                            $query->table($userTableName)->where($userTableName . '.id=' . $tableName . 'user_id')
+                                ->where(function ($query) use ($search) {
+                                    $query->where('nickname', 'like', "%{$search}%")
+                                        ->whereOr('mobile', 'like', "%{$search}%");
+                                });
+                        });
+                    });
+            });
+        }
+
+        // 订单类型
+        if ($type != 'all') {
+            $orders = $orders->where('type', $type);
+        }
+        // 支付类型
+        if ($pay_type != 'all') {
+            $orders = $orders->where('pay_type', $pay_type);
+        }
+        // 下单平台
+        if ($platform != 'all') {
+            $orders = $orders->where('platform', $platform);
+        }
+        // 营销活动
+        if ($activity_type != 'all') {
+            $orders = $orders->where('activity_type', 'like', '%' . $activity_type . '%');
+        }
+        // 快递方式
+        if ($dispatch_type != 'all') {
+            $orders = $orders->whereExists(function ($query) use ($dispatch_type, $tableName) {
+                $itemTableName = (new \app\admin\model\shopro\order\OrderItem())->getQuery()->getTable();
+
+                $query->table($itemTableName)->where($itemTableName . '.order_id=' . $tableName . 'id')
+                    ->where('dispatch_type', $dispatch_type);
+            });
+        }
+        // 下单时间
+        if ($datetimerange) {
+            $startTime = strtotime($datetimerange[0]);
+            $endTime = strtotime($datetimerange[1]);
+
+            $orders = $orders->where('createtime', 'between', [$startTime, $endTime]);
+        }
+        // 订单状态
+        if ($status != 'all') {
+            if (in_array($status, ['invalid', 'cancel', 'nopay', 'nosend', 'noget', 'nocomment', 'aftersale', 'refund', 'payed', 'finish'])) {
+                if (in_array($status, ['nosend', 'noget', 'nocomment', 'aftersale', 'refund'])) {
+                    $orders = $orders->payed();
+                }
+                $status = $status == 'refund' ? 'refundStatus' : $status;
+                $orders = $orders->{$status}(false);
+            }
+        }
+
+        return $orders;
+    }
+}

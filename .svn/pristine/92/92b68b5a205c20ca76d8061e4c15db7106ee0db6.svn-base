@@ -1,0 +1,419 @@
+<link rel="stylesheet" href="__CDN__/assets/addons/shopro/libs/element/element.css">
+<style>
+    #goodsIndex {
+        font-family: Source Han Sans SC;
+        background: #fff;
+        /* height: calc(100vh - 63px); */
+        padding: 0 20px;
+        overflow: auto;
+        color: #666;
+
+    }
+
+    .btn-common {
+        line-height: 32px;
+        height: 32px;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-box {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        justify-content: space-between;
+    }
+
+    .refresh-btn {
+        width: 32px;
+        border: 1px solid #E6E6E6;
+        font-size: 14px;
+        margin-right: 20px;
+    }
+
+    .create-goods,
+    .add-params,
+    .add-level1-sku {
+        width: 98px;
+        background: #7536D0;
+        color: #fff;
+    }
+
+    .create-goods span,
+    .add-params span,
+    .add-level1-sku span {
+        margin-left: 8px;
+    }
+
+    .goods-name {
+        display: flex;
+        align-items: center;
+    }
+
+    .goods-img {
+        width: 34px;
+        height: 34px;
+        margin-right: 10px;
+    }
+
+    .el-table,
+    .el-table thead,
+    .el-table th {
+        color: #444;
+        font-weight: 500 !important;
+    }
+
+    .display-flex {
+        display: flex;
+        align-items: center;
+    }
+
+
+    .label-auto {
+        width: 100%;
+        height: 100%;
+    }
+
+    .el-radio__input.is-checked+.el-radio__label,
+    .el-tabs__item.is-active,
+    .el-tabs__item:hover,
+    .el-pager li.active {
+        color: #7438D5;
+    }
+
+    .el-radio__input.is-checked .el-radio__inner,
+    .el-tabs__active-bar,
+    .el-checkbox__input.is-checked .el-checkbox__inner,
+    .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+        background: #7438D5;
+        border-color: #7438D5;
+    }
+
+
+
+    .sort-order {
+        margin-left: 6px;
+        color: #C0C4CC;
+        flex-direction: row-reverse;
+    }
+
+    .recycle-btn {
+        position: absolute;
+        top: 20px;
+        right: 14px;
+        width: 88px;
+        color: #7438D5;
+        border: #7438D5 1px solid;
+    }
+
+    .recycle-btn img {
+        margin-right: 6px;
+    }
+
+    .all-btn-up,
+    .all-btn-del,.all-btn-up1 {
+        width: 60px;
+        border: 1px solid #E5E5E5;
+        margin-right: 20px;
+    }
+    .all-btn-up1:hover {
+        color: #7438D5;
+        border-color: #7438D5;
+    }
+    .all-btn-up:hover {
+        color: #50E3C2;
+        border-color: #50E3C2;
+    }
+
+    .all-btn-del:hover {
+        color: #FF5959;
+        border-color: #FF5959;
+    }
+
+    .status-box {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .status-btn {
+        width: 56px;
+        height: 26px;
+        line-height: 24px;
+        border: 1px solid #7438D5;
+        color: #7438D5;
+        font-size: 12px;
+    }
+
+    .status-btn-2 {
+        color: #FF5959;
+        border-color: #FF5959;
+    }
+
+    .status-btn-3 {
+        color: #999;
+        border-color: #999;
+    }
+
+    .el-table th {
+        background: #F9F9F9;
+        padding: 7px 0;
+    }
+
+    .el-tabs__item {
+        width: 80px;
+        padding: 0;
+        padding-right: 20px;
+        text-align: center;
+    }
+
+    .el-tabs__nav-wrap::after {
+        height: 1px;
+    }
+
+    .icon-top {
+        margin-left: -5px;
+    }
+
+    .edit-text,
+    .copy-text,
+    .del-text {
+        cursor: pointer;
+        color: #434343;
+    }
+
+    .copy-text {
+        margin: 0 14px;
+    }
+
+    .edit-text:hover {
+        color: #7438D5;
+    }
+
+    .copy-text:hover {
+        color: #01CFA1;
+    }
+
+    .del-text:hover {
+        color: #FF5959;
+    }
+
+    
+
+    .el-button--text,
+    .el-button--text:hover {
+        /* color: #999; */
+    }
+    .el-button--primary,
+    .el-button--primary:hover{
+        background: #7438D5 !important;
+        border-color: #7438D5 !important;
+        color: #fff;
+    }
+    .el-popover {
+        left: 46px;
+        top: 10px;
+    }
+
+    [v-cloak] {
+        display: none
+    }
+</style>
+<script src="__CDN__/assets/addons/shopro/libs/vue.js"></script>
+<script src="__CDN__/assets/addons/shopro/libs/element/element.js"></script>
+<script src="__CDN__/assets/addons/shopro/libs/Sortable.min.js"></script>
+<script src="__CDN__/assets/addons/shopro/libs/vuedraggable.js"></script>
+<script src="__CDN__/assets/addons/shopro/libs/moment.js"></script>
+<script src="__CDN__/assets/addons/shopro/libs/wangEditor.min.js"></script>
+<div id="goodsIndex" v-cloak style="height: calc(100vh - 63px);" @click.stop="hideup()">
+    <div style="height: 82px;padding-top: 20px;position: relative;">
+        <el-tabs v-model="activeStatus" @tab-click="tabOpt">
+            <el-tab-pane label="全部" name="all"></el-tab-pane>
+            <el-tab-pane label="已上架" name="up"></el-tab-pane>
+            <el-tab-pane label="已下架" name="down"></el-tab-pane>
+            <el-tab-pane label="已隐藏" name="hidden"></el-tab-pane>
+        </el-tabs>
+        <div class="btn-common recycle-btn" @click="goRecycle">
+            <img src="/assets/addons/shopro/img/decorate/recycle-btn.png">
+            回收站
+        </div>
+    </div>
+    <div>
+        <div class="btn-box">
+            <div class="display-flex">
+                <div class="btn-common refresh-btn">
+                    <i class="el-icon-refresh" @click="goRefresh"></i>
+                </div>
+                <div class="btn-common create-goods" @click="goodsOpt('create')">
+                    <i class="el-icon-plus"></i>
+                    <span>新增商品</span>
+                </div>
+            </div>
+            <div>
+                <el-input placeholder="请输入标题" suffix-icon="el-icon-search" v-model="searchKey">
+                </el-input>
+            </div>
+        </div>
+        <div>
+            <el-table ref="multipleTable" :data="goodsData" tooltip-effect="dark" style="width: 100%" border
+                @selection-change="handleSelectionChange">
+                <el-table-column type="selection" width="60">
+                </el-table-column>
+                <el-table-column label="ID" prop="id" width="80">
+                    <template slot="header" slot-scope="scope">
+                        <div class="display-flex">
+                            <div>ID</div>
+                            <div class="display-flex sort-order">
+                                <i class="el-icon-sort-up icon-top"
+                                    :style="{color:(sort=='id' && order=='asc')?'#7438d5':''}"
+                                    @click="sortOrder('id','asc')"></i>
+                                <i class="el-icon-sort-down icon-bottom"
+                                    :style="{color:(sort=='id' && order=='desc')?'#7438d5':''}"
+                                    @click="sortOrder('id','desc')"></i>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="商品" width="440">
+                    <template slot-scope="scope">
+                        <div class="goods-name">
+                            <img class="goods-img" :src="scope.row.image" alt="">
+                            <div class="goods-title">{{scope.row.title}}</div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="price" label="价格" width="100">
+                    <template slot="header" slot-scope="scope">
+                        <div class="display-flex">
+                            <div>价格</div>
+                            <div class="display-flex sort-order">
+                                <i class="el-icon-sort-up icon-top"
+                                    :style="{color:(sort=='price' && order=='asc')?'#7438d5':''}"
+                                    @click="sortOrder('price','asc')"></i>
+                                <i class="el-icon-sort-down icon-bottom"
+                                    :style="{color:(sort=='price' && order=='desc')?'#7438d5':''}"
+                                    @click="sortOrder('price','desc')"></i>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="sales" label="销量" width="100">
+                    <template slot="header" slot-scope="scope">
+                        <div class="display-flex">
+                            <div>销量</div>
+                            <div class="display-flex sort-order">
+                                <i class="el-icon-sort-up icon-top"
+                                    :style="{color:(sort=='sales' && order=='asc')?'#7438d5':''}"
+                                    @click="sortOrder('sales','asc')"></i>
+                                <i class="el-icon-sort-down icon-bottom"
+                                    :style="{color:(sort=='sales' && order=='desc')?'#7438d5':''}"
+                                    @click="sortOrder('sales','desc')"></i>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="views" label="浏览量" width="100">
+                    <template slot="header" slot-scope="scope">
+                        <div class="display-flex">
+                            <div>浏览量</div>
+                            <div class="display-flex sort-order">
+                                <i class="el-icon-sort-up icon-top"
+                                    :style="{color:(sort=='views' && order=='asc')?'#7438d5':''}"
+                                    @click="sortOrder('views','asc')"></i>
+                                <i class="el-icon-sort-down icon-bottom"
+                                    :style="{color:(sort=='views' && order=='desc')?'#7438d5':''}"
+                                    @click="sortOrder('views','desc')"></i>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="stock" label="库存" width="100">
+                    <template slot="header" slot-scope="scope">
+                        <div class="display-flex">
+                            <div>库存</div>
+                            <div class="display-flex sort-order">
+                                <i class="el-icon-sort-up icon-top"
+                                    :style="{color:(sort=='stock' && order=='asc')?'#7438d5':''}"
+                                    @click="sortOrder('stock','asc')"></i>
+                                <i class="el-icon-sort-down icon-bottom"
+                                    :style="{color:(sort=='stock' && order=='desc')?'#7438d5':''}"
+                                    @click="sortOrder('stock','desc')"></i>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="weigh" label="排序" width="100">
+                    <template slot="header" slot-scope="scope">
+                        <div class="display-flex">
+                            <div>排序</div>
+                            <div class="display-flex sort-order">
+                                <i class="el-icon-sort-up icon-top"
+                                    :style="{color:(sort=='weigh' && order=='asc')?'#7438d5':''}"
+                                    @click="sortOrder('weigh','asc')"></i>
+                                <i class="el-icon-sort-down icon-bottom"
+                                    :style="{color:(sort=='weigh' && order=='desc')?'#7438d5':''}"
+                                    @click="sortOrder('weigh','desc')"></i>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="更新时间" width="180">
+                    <template slot-scope="scope">
+                        <div>
+                            {{moment(scope.row.updatetime*1000).format("YYYY-MM-DD HH:mm:ss")}}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="280">
+                    <template slot-scope="scope">
+                        <el-popover placement="right" width="120" v-model="upStatus" v-if="currentIndex==scope.$index">
+                            <div class="display-flex status-box">
+                                <div class="btn-common status-btn status-btn-1" v-if="scope.row.status!='up'"
+                                    @click="editStatus(scope.row.id,'up')">
+                                    上架
+                                </div>
+                                <div class="btn-common status-btn status-btn-2" v-if="scope.row.status!='down'"
+                                    @click="editStatus(scope.row.id,'down')">
+                                    下架
+                                </div>
+                                <div class="btn-common status-btn status-btn-3" v-if="scope.row.status!='hidden'"
+                                    @click="editStatus(scope.row.id,'hidden')">
+                                    隐藏
+                                </div>
+                            </div>
+                        </el-popover>
+                        <span style="cursor: pointer;margin-right: 12px;" @click.stop="popoverOpt(scope.$index)">
+                            <span style="color:#7438D5" v-if="scope.row.status=='up'">{{scope.row.status_text}}</span>
+                            <span style="color:#FF5959" v-if="scope.row.status=='down'">{{scope.row.status_text}}</span>
+                            <span style="color:#999" v-if="scope.row.status=='hidden'">{{scope.row.status_text}}</span>
+                        </span>
+                        <span class="edit-text" @click="goodsOpt('edit',scope.row.id)">编辑
+                        </span>
+                        <span class="copy-text" @click="goodsOpt('copy',scope.row.id)">复制
+                        </span>
+                        <span class="del-text" @click="goodsOpt('del',scope.row.id)">删除</span>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+    </div>
+    <div class="display-flex" style="justify-content: space-between;margin: 30px 0;">
+        <div class="display-flex">
+            <div class="btn-common all-btn-up1" @click="goodsOpt('up',null)" v-if="activeStatus!='up'">
+                上架
+            </div>
+            <div class="btn-common all-btn-up" @click="goodsOpt('down',null)" v-if="activeStatus!='down'">
+                下架
+            </div>
+            <div class="btn-common all-btn-del" @click="goodsOpt('del',null)">
+                删除
+            </div>
+        </div>
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+            :page-sizes="[10, 20, 30, 40]" :page-size="limit" layout="total, sizes, prev, pager, next, jumper"
+            :total="totalPage">
+        </el-pagination>
+    </div>
+</div>

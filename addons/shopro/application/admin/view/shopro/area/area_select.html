@@ -1,0 +1,62 @@
+
+<style>
+    .app-select,.app-del{
+        cursor: pointer;
+    }
+    .all-opt{
+        margin-left: 10px;color:#18bc9c;cursor: pointer;
+    }
+    .pro-sty,.cit-sty,.area-sty{
+        cursor: pointer;
+    }
+    [v-cloak] {
+        display: none
+    }
+</style>
+<script src="__CDN__/assets/addons/shopro/libs/vue.js"></script>
+<div id="app" v-cloak>   
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">运费模板:</label>
+        <div class="col-xs-6 col-sm-4 app-title">
+            <div>地区选择<span class="all-opt" @click="allopt()">全选</span></div> 
+                      
+        </div>
+        <div class="col-xs-6 col-sm-4 app-title">
+            <div>已选择</div>            
+        </div>
+    </div> 
+    <div class="form-group app-group">
+        <input type="hidden" id="area-data" name="row[area_data]">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-6 col-sm-4 app-group-con">
+            <div v-for="(province,p) in pcaData" :key="p" v-if="province.flagLeft==1">
+                <div class="app-flex"><span class="pro-sty" @click="showLeft(p, null, null)">{{province.name}}</span><span
+                        class="app-select" @click="selectAreaLeft(p, null, null)">选择</span></div>
+                <div v-for="(city,c) in province.city" :key="c" v-if="province.flagLeft==1 && city.flagLeft==1" v-show="city.showLeft">
+                    <div class="app-flex"><span class="cit-sty" @click="showLeft(p, c, null)">{{city.name}}</span><span
+                        class="app-select"    @click="selectAreaLeft(p, c, null)">选择</span></div>
+                    <div v-for="(area,a) in city.area" :key="a" v-if="province.flagLeft==1  && city.flagLeft==1 && area.flagLeft==1" v-show="area.showLeft">
+                        <div class="app-flex"><span class="area-sty">{{area.name}}</span><span
+                            class="app-select"      @click="selectAreaLeft(p, c, a)">选择</span></div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="col-xs-6 col-sm-4 app-group-con">
+            <div v-for="(province,p) in pcaData" :key="p" v-if="province.flagRight==1">
+                <div class="app-flex"><span class="pro-sty" @click="showRight(p, null, null)">{{province.name}}</span><span
+                    class="app-del"   @click="selectAreaRight(p, null, null)">取消</span></div>
+                <div v-for="(city,c) in province.city" :key="c" v-if="province.flagRight==1 && city.flagRight==1" v-show="city.showRight">
+                    <div class="app-flex"><span class="cit-sty" @click="showRight(p, c, null)">{{city.name}}</span><span
+                        class="app-del"     @click="selectAreaRight(p, c, null)">取消</span></div>
+                    <div v-for="(area,a) in city.area" :key="a" v-if="province.flagRight==1  && city.flagRight==1 && area.flagRight==1" v-show="area.showRight">
+                        <div class="app-flex"><span class="area-sty">{{area.name}}</span><span
+                            class="app-del"      @click="selectAreaRight(p, c, a)">取消</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

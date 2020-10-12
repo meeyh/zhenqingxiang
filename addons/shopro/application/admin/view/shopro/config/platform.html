@@ -1,0 +1,618 @@
+<style>
+     .input-company {
+        display: flex;
+        align-items: center;
+    }
+
+    .input-company span {
+        margin-left: 5px;
+        width: 60px;
+    }
+    .status-box{
+        display: flex;
+        align-items: center;
+        height: 30px;
+    }
+    .status-yes{
+        width:11px;
+                height:11px;
+                background:#18BC9C;
+                border-radius:50%;margin-right:8px
+    }
+    .status-no{
+        width:11px;
+                height:11px;
+                background:#d2d6de;
+                border-radius:50%;margin-right:8px
+    }
+    .status-yes-text{
+        color: #18BC9C;
+    }
+    .status-no-text{
+        color: #d2d6de;
+    }
+</style>
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    {:token()}
+    {if request()->get('type') == 'wxOfficialAccount'}
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">公众号名称:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-name" class="form-control" placeholder="请输入公众号名称" name="row[name]" type="text" value="{$row.name|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">公众号类型:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="radio">
+                <label for="row[wx_type]-1"><input id="row[wx_type]-1" name="row[wx_type]"
+                    type="radio" value="1" {if condition="$row.wx_type=='1'"} checked {/if} />
+                    订阅号</label>
+                    <label for="row[wx_type]-2"><input id="row[wx_type]-2" name="row[wx_type]"
+                        type="radio" value="2" {if condition="$row.wx_type=='2'"} checked {/if}  />
+                        认证订阅号</label>
+                        <label for="row[wx_type]-3"><input id="row[wx_type]-3" name="row[wx_type]"
+                            type="radio" value="3" {if condition="$row.wx_type=='3'"} checked {/if}  />
+                            服务号</label>
+                            <label for="row[wx_type]-4"><input id="row[wx_type]-4" name="row[wx_type]"
+                                type="radio" value="4"  {if condition="$row.wx_type=='4'"} checked {/if} />
+                                认证服务号/认证政府订阅号/认证媒体订阅号</label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">公众号头像:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-avatar" class="form-control" size="50" name="row[avatar]" type="text" value="{$row.avatar|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-image" class="btn btn-danger plupload"
+                            data-input-id="c-avatar" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="false" data-preview-id="p-avatar"><i class="fa fa-upload"></i>
+                            {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-image" class="btn btn-primary fachoose"
+                            data-input-id="c-avatar" data-mimetype="image/*" data-multiple="false"><i
+                                class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-avatar"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-avatar"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">公众号二维码:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-qrcode" class="form-control" size="50" name="row[qrcode]" type="text" value="{$row.qrcode|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-images" class="btn btn-danger plupload"
+                            data-input-id="c-qrcode"
+                            data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="true" data-preview-id="p-qrcode"><i
+                                class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-images"
+                            class="btn btn-primary fachoose" data-input-id="c-qrcode"
+                            data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i>
+                            {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-qrcode"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-qrcode"></ul>
+        </div>
+    </div>   
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">开发者ID(AppID):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-app_id" class="form-control" name="row[app_id]" type="text" value="{$row.app_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">开发者密码(AppSecret):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-secret" class="form-control" name="row[secret]" type="text" value="{$row.secret|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">服务器地址(URL):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="url" class="form-control" name="row[url]" type="text" value="{$row.url|htmlentities}" disabled>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">令牌(Token):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="token" class="form-control" name="row[token]" type="text" value="{$row.token|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">消息加解密密钥(EncodingAESKey):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-aes_key" class="form-control" name="row[aes_key]" type="text"
+                value="{$row.aes_key|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">网页自动授权登录:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-auto_login" name="row[auto_login]" type="hidden" value="{:$row.auto_login?1:0}">
+            <a href="javascript:;" data-toggle="switcher" class="btn-switcher" data-input-id="c-auto_login"
+                data-yes="1" data-no="0">
+                <i class="fa fa-toggle-on text-success {if !$row.auto_login}fa-flip-horizontal text-gray{/if} fa-2x"></i>
+            </a>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">服务器配置状态:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="radio">
+                <label for="row[status]-1"><input id="row[status]-1" name="row[status]"
+                    type="radio" value="1" {if condition="$row.status=='1'"} checked {/if} />
+                    已对接</label>
+                    <label for="row[status]-0"><input id="row[status]-0" name="row[status]"
+                        type="radio" value="0" {if condition="$row.status=='0'"} checked {/if}  />
+                        未对接</label>
+            </div>
+        </div>
+    </div>
+    {/if}
+    {if request()->get('type') == 'wxMiniProgram'}
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">小程序名称:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-name" class="form-control" placeholder="请输入小程序名称" name="row[name]" type="text" value="{$row.name|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">小程序头像:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-avatar" class="form-control" size="50" name="row[avatar]" type="text" value="{$row.avatar|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-image" class="btn btn-danger plupload"
+                            data-input-id="c-avatar" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="false" data-preview-id="p-avatar"><i class="fa fa-upload"></i>
+                            {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-image" class="btn btn-primary fachoose"
+                            data-input-id="c-avatar" data-mimetype="image/*" data-multiple="false"><i
+                                class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-avatar"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-avatar"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">小程序码:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-qrcode" class="form-control" size="50" name="row[qrcode]" type="text" value="{$row.qrcode|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-images" class="btn btn-danger plupload"
+                            data-input-id="c-qrcode"
+                            data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="true" data-preview-id="p-qrcode"><i
+                                class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-images"
+                            class="btn btn-primary fachoose" data-input-id="c-qrcode"
+                            data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i>
+                            {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-qrcode"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-qrcode"></ul>
+        </div>
+    </div>   
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">AppID:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-app_id" class="form-control" name="row[app_id]" type="text" value="{$row.app_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">AppSecret:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-secret" class="form-control" name="row[secret]" type="text" value="{$row.secret|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">小程序自动登录(建议开启):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-auto_login" name="row[auto_login]" type="hidden" value="{:$row.auto_login?1:0}">
+            <a href="javascript:;" data-toggle="switcher" class="btn-switcher" data-input-id="c-auto_login"
+                data-yes="1" data-no="0">
+                <i class="fa fa-toggle-on text-success {if !$row.auto_login}fa-flip-horizontal text-gray{/if} fa-2x"></i>
+            </a>
+        </div>
+
+
+        <!-- <label class="control-label col-xs-12 col-sm-2">小程序自动登录(建议强制开启):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-auto_login" name="row[auto_login]" type="hidden"  value="{:$row.auto_login?1:0}">
+            <a href="javascript:;" data-input-id="c-auto_login"
+                data-yes="1" data-no="0">
+                <i class="fa fa-toggle-on text-success {if !$row.auto_login}fa-flip-horizontal text-gray{/if} fa-2x"></i>
+            </a>
+        </div> -->
+    </div>
+    {/if}
+    {if request()->get('type') == 'H5'}
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">微信AppID(用于H5微信支付):</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-app_id" class="form-control" name="row[app_id]" type="text" value="{$row.app_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">微信Secret:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-secret" class="form-control" name="row[secret]" type="text" value="{$row.secret|htmlentities}">
+        </div>
+    </div>
+    {/if}
+    {if request()->get('type') == 'App'}
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">AppID:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-app_id" class="form-control" name="row[app_id]" type="text" value="{$row.app_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">AppSecret:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-secret" class="form-control" name="row[secret]" type="text" value="{$row.secret|htmlentities}">
+        </div>
+    </div>    
+    {/if}
+    {if request()->get('type') == 'wechat'}      
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">应用平台:</label>
+        <div class="col-xs-12 col-sm-8">
+           <select id="c-platform" class="form-control selectpicker" multiple="true" name="row[platform][]" >
+                <option value="wxOfficialAccount" {in name="'wxOfficialAccount'" value="$row.platform" }selected{/in}>微信公众号</option>
+                <option value="wxMiniProgram"  {in name="'wxMiniProgram'" value="$row.platform" }selected{/in}>小程序</option>
+                <option value="H5"  {in name="'H5'" value="$row.platform" }selected{/in}>H5</option>
+                <option value="App" {in name="'App'" value="$row.platform" }selected{/in}>App</option>
+            </select> 
+        </div>
+    </div>   
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">商户号:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-mck_id" class="form-control" name="row[mch_id]" type="text"  value="{$row.mch_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">支付密钥:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-key" class="form-control" name="row[key]" type="text"  value="{$row.key|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">商户证书:</label>
+        <div class="col-xs-12 col-sm-8">       
+            <input id="c-cert_client" class="form-control" size="50" name="row[cert_client]" type="text" value="{$row.cert_client|htmlentities}" data-tip="请上传商户证书">
+            <span><button type="button" id="plupload-cert_client" class="btn btn-danger plupload" data-input-id="c-cert_client" data-multiple="false"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+            <span class="msg-box n-right" for="c-cert_client"></span>   
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">商户Key证书:</label>
+        <div class="col-xs-12 col-sm-8">      
+            <input id="c-cert_key" class="form-control" size="50" name="row[cert_key]" type="text" value="{$row.cert_key|htmlentities}" data-tip="请上传商户证书">
+            <span><button type="button" id="plupload-cert_key" class="btn btn-danger plupload" data-input-id="c-cert_key" data-multiple="false"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+            <span class="msg-box n-right" for="c-cert_key"></span>   
+        </div>
+    </div>
+    {/if}
+    {if request()->get('type') == 'alipay'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">应用平台:</label>
+        <div class="col-xs-12 col-sm-8">
+           <select id="c-platform" class="form-control selectpicker" multiple="true" name="row[platform][]" >
+                <option value="wxOfficialAccount" {in name="'wxOfficialAccount'" value="$row.platform" }selected{/in}>微信公众号</option>
+                <option value="wxMiniProgram"  {in name="'wxMiniProgram'" value="$row.platform" }selected{/in}>小程序</option>
+                <option value="H5"  {in name="'H5'" value="$row.platform" }selected{/in}>H5</option>
+                <option value="App" {in name="'App'" value="$row.platform" }selected{/in}>App</option>
+            </select> 
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">AppId:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-app_id" class="form-control" name="row[app_id]" type="text"  value="{$row.app_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">ali_public_key:</label>
+        <div class="col-xs-12 col-sm-8">          
+            <input id="c-ali_public_key" class="form-control" size="50" name="row[ali_public_key]" type="text" value="{$row.ali_public_key|htmlentities}" data-tip="请上传证书">
+            <span><button type="button" id="plupload-ali_public_key" class="btn btn-danger plupload" data-input-id="c-ali_public_key" data-multiple="false"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+            <span class="msg-box n-right" for="c-ali_public_key"></span>   
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">app_cert_public_key:</label>
+        <div class="col-xs-12 col-sm-8">          
+            <input id="c-app_cert_public_key" class="form-control" size="50" name="row[app_cert_public_key]" type="text" value="{$row.app_cert_public_key|htmlentities}" data-tip="请上传证书">
+            <span><button type="button" id="plupload-app_cert_public_key" class="btn btn-danger plupload" data-input-id="c-app_cert_public_key" data-multiple="false"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+            <span class="msg-box n-right" for="c-app_cert_public_key"></span>   
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">alipay_root_cert:</label>
+        <div class="col-xs-12 col-sm-8">  
+            <input id="c-alipay_root_cert" class="form-control" size="50" name="row[alipay_root_cert]" type="text" value="{$row.alipay_root_cert|htmlentities}" data-tip="请上传证书">
+            <span><button type="button" id="plupload-alipay_root_cert" class="btn btn-danger plupload" data-input-id="c-alipay_root_cert" data-multiple="false"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+            <span class="msg-box n-right" for="c-alipay_root_cert"></span>  
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">private_key:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-private_key" class="form-control" name="row[private_key]" type="text"  value="{$row.private_key|htmlentities}">
+        </div>
+    </div> 
+    {/if}
+    {if request()->get('type') == 'wallet'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">应用平台:</label>
+        <div class="col-xs-12 col-sm-8">
+           <select id="c-platform" class="form-control selectpicker" multiple="true" name="row[platform][]" >
+                <option value="wxOfficialAccount" {in name="'wxOfficialAccount'" value="$row.platform" }selected{/in}>微信公众号</option>
+                <option value="wxMiniProgram"  {in name="'wxMiniProgram'" value="$row.platform" }selected{/in}>小程序</option>
+                <option value="H5"  {in name="'H5'" value="$row.platform" }selected{/in}>H5</option>
+                <option value="App" {in name="'App'" value="$row.platform" }selected{/in}>App</option>
+            </select> 
+        </div>
+    </div>         
+    {/if}
+    {if request()->get('type') == 'apple_pay'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">应用平台:</label>
+        <div class="col-xs-12 col-sm-8">
+           <select id="c-platform" class="form-control selectpicker" multiple="true" name="row[platform][]" >
+                <option value="wxOfficialAccount" {in name="'wxOfficialAccount'" value="$row.platform" }selected{/in}>微信公众号</option>
+                <option value="wxMiniProgram"  {in name="'wxMiniProgram'" value="$row.platform" }selected{/in}>小程序</option>
+                <option value="H5"  {in name="'H5'" value="$row.platform" }selected{/in}>H5</option>
+                <option value="App" {in name="'App'" value="$row.platform" }selected{/in}>App</option>
+            </select> 
+        </div>
+    </div>        
+    {/if}
+    {if request()->get('type') == 'shopro'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">商城名称:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-name" class="form-control" placeholder="请输入商城名称" name="row[name]" type="text" value="{$row.name|htmlentities}">
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">商城域名:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-domain" class="form-control" placeholder="请输入商城域名必须填写http(s)://" name="row[domain]" type="text" value="{$row.domain|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">版本:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-version" class="form-control" placeholder="请输入版本号" name="row[version]" type="text" value="{$row.version|htmlentities}">
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">logo:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-logo" class="form-control" size="50" name="row[logo]" type="text" value="{$row.logo|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-image" class="btn btn-danger plupload"
+                            data-input-id="c-logo" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="false" data-preview-id="p-logo"><i class="fa fa-upload"></i>
+                            {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-image" class="btn btn-primary fachoose"
+                            data-input-id="c-logo" data-mimetype="image/*" data-multiple="false"><i
+                                class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-logo"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-logo"></ul>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">版权信息:</label>
+        <div class="col-xs-12 col-sm-8">
+         
+            {volist name="$row.copyright" id="vo"}
+            <input style="margin: 5px 0;"  class="form-control" name="row[copyright][]" type="text" value="{$vo}">
+            {/volist}
+        </div>
+    </div> 
+    {/if}
+    {if request()->get('type') == 'share'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">分享标题:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-title" class="form-control" placeholder="请输入分享标题" name="row[title]" type="text" value="{$row.title|htmlentities}">
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">默认分享图片:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-image" class="form-control" size="50" name="row[image]" type="text" value="{$row.image|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-imagess" class="btn btn-danger plupload"
+                            data-input-id="c-image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="false" data-preview-id="p-image"><i class="fa fa-upload"></i>
+                            {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-imagess" class="btn btn-primary fachoose"
+                            data-input-id="c-image" data-mimetype="image/*" data-multiple="false"><i
+                                class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-image"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-image"></ul>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">商品分享背景:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-goods_poster_bg" class="form-control" size="50" name="row[goods_poster_bg]" type="text" value="{$row.goods_poster_bg|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-image" class="btn btn-danger plupload"
+                            data-input-id="c-goods_poster_bg" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="false" data-preview-id="p-goods_poster_bg"><i class="fa fa-upload"></i>
+                            {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-image" class="btn btn-primary fachoose"
+                            data-input-id="c-goods_poster_bg" data-mimetype="image/*" data-multiple="false"><i
+                                class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-goods_poster_bg"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-goods_poster_bg"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">用户分享背景:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-user_poster_bg" class="form-control" size="50" name="row[user_poster_bg]" type="text" value="{$row.user_poster_bg|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-images" class="btn btn-danger plupload"
+                            data-input-id="c-user_poster_bg" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="false" data-preview-id="p-user_poster_bg"><i class="fa fa-upload"></i>
+                            {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-images" class="btn btn-primary fachoose"
+                            data-input-id="c-user_poster_bg" data-mimetype="image/*" data-multiple="false"><i
+                                class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-user_poster_bg"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-user_poster_bg"></ul>
+        </div>
+    </div>      
+    {/if}
+    {if request()->get('type') == 'score'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">每日签到积分:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-everyday" class="form-control" placeholder="请输入每日签到积分" name="row[everyday]" type="text" value="{$row.everyday|htmlentities}">
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">递增天数:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-until_day" class="form-control" placeholder="请输入递增天数" name="row[until_day]" type="text"
+                value="{$row.until_day|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">递增数量:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-inc_value" class="form-control" placeholder="请输入递增数量" name="row[inc_value]" type="text" value="{$row.inc_value|htmlentities}">
+        </div>
+    </div>  
+
+    {/if}
+    {if request()->get('type') == 'withdraw'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">手续费:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-service_fee" class="form-control" placeholder="请输入everyday" name="row[service_fee]" type="text" value="{$row.service_fee|htmlentities}">
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">最小提现金额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-min" class="form-control" placeholder="请输入最小提现金额" name="row[min]" type="text" value="{$row.min|htmlentities}">
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">最大提现金额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-max" class="form-control" placeholder="请输入最大提现金额" name="row[max]" type="text" value="{$row.max|htmlentities}">
+        </div>
+    </div>  
+
+    {/if}
+    {if request()->get('type') == 'order'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">自动关闭时间:</label>
+        <div class="col-xs-12 col-sm-8 input-company">
+            <input id="c-order_auto_close" class="form-control" placeholder="请输入订单自动关闭时间" name="row[order_auto_close]" type="text" value="{$row.order_auto_close|htmlentities}">
+            <span>分钟</span>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">自动收货时间:</label>
+        <div class="col-xs-12 col-sm-8 input-company">
+            <input id="c-order_auto_confirm" class="form-control" placeholder="请输入订单自动发货时间" name="row[order_auto_confirm]" type="text" value="{$row.order_auto_confirm|htmlentities}">
+            <span>天</span>
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">自动评价时间:</label>
+        <div class="col-xs-12 col-sm-8 input-company">
+            <input id="c-order_auto_comment" class="form-control" placeholder="请输入订单自动评价时间" name="row[order_auto_comment]" type="text" value="{$row.order_auto_comment|htmlentities}">
+            <span>天</span>
+        </div>
+    </div>  
+
+    {/if}
+    {if request()->get('type') == 'user'}  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">默认昵称:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-nickname" class="form-control" placeholder="请输入默认昵称" name="row[nickname]" type="text" value="{$row.nickname|htmlentities}">
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">默认头像:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-avatar" class="form-control" size="50" name="row[avatar]" type="text" value="{$row.avatar|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-image" class="btn btn-danger plupload"
+                            data-input-id="c-avatar" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp"
+                            data-multiple="false" data-preview-id="p-avatar"><i class="fa fa-upload"></i>
+                            {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-image" class="btn btn-primary fachoose"
+                            data-input-id="c-avatar" data-mimetype="image/*" data-multiple="false"><i
+                                class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-avatar"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-avatar"></ul>
+        </div>
+    </div> 
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">默认分组:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-group_id"  data-source="user/group/index"
+                                       data-multiple="false" class="form-control selectpage" name="row[group_id]"
+                                       type="text" value="{$row.group_id|htmlentities}">
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">默认余额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-money" class="form-control" placeholder="请输入默认余额" name="row[money]" type="text" value="{$row.money|htmlentities}">
+        </div>
+    </div>  
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">默认积分:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-score" class="form-control" placeholder="请输入默认积分" name="row[score]" type="text" value="{$row.score|htmlentities}">
+        </div>
+    </div>  
+
+    {/if}
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-success btn-embossed disabled">{:__('OK')}</button>
+            <button type="reset" class="btn btn-default btn-embossed">{:__('Reset')}</button>
+        </div>
+    </div>
+</form>
